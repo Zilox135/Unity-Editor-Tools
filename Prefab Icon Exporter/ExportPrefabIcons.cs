@@ -4,32 +4,36 @@ using UnityEngine;
 
 public class ExportPrefabIcons
 {
-    [MenuItem("Assets/Save Prefab Icon")]
-    public static void SavePrefabIcons()
+    [MenuItem("Assets/Export Prefab Icon")]
+    public static void ExportPrefabIconTexture()
     {
-        foreach (var @object in Selection.objects)
+        foreach (var obj in Selection.objects)
         {
-            if (!PrefabUtility.IsPartOfAnyPrefab(@object))
+            if (!PrefabUtility.IsPartOfAnyPrefab(obj))
             {
-                Debug.LogError($"Object with name {@object.name} is not part of any prefab!");
-                return;
+                Debug.LogWarning($"Object '{obj.name}' is not part of any prefab! Skipping it.");
+                continue;
             }
-            var texture2D = GetReadableTexture(AssetPreview.GetAssetPreview(@object));
-            if (@object != null && texture2D != null)
+
+            var texture2D = GetReadableTexture(AssetPreview.GetAssetPreview(obj));
+
+            if (obj != null && texture2D != null)
             {
-                SaveTexture(texture2D, @object.name);
+                SaveTexture(texture2D, obj.name);
             }
         }
     }
 
     private static void SaveTexture(Texture2D texture, string name)
     {
-        byte[] bytes = texture.EncodeToPNG();
-        var dirPath = Application.dataPath + "/Icons";
+        var dirPath = Application.dataPath + "/Exported Icons";
+
         if (!Directory.Exists(dirPath))
         {
             Directory.CreateDirectory(dirPath);
         }
+
+        byte[] bytes = texture.EncodeToPNG();
         File.WriteAllBytes($"{dirPath}/{name}.png", bytes);
         Debug.Log($"{bytes.Length / 1024} Kb was saved as: {dirPath}");
 
@@ -54,6 +58,7 @@ public class ExportPrefabIcons
             RenderTexture.ReleaseTemporary(renderTex);
             return readableTexture;
         }
+
         return null;
     }
 }
