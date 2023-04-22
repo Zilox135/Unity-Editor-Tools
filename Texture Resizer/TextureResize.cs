@@ -41,24 +41,28 @@ public class TextureResize
 
     public static void SetMaxTextureSize(int maxSize, int ignoreBelowSize = 0)
     {
-        var textures = Resources.FindObjectsOfTypeAll(typeof(TextureImporter)) as TextureImporter[];      
-        int numConverted = 0;
+        var textures = Selection.GetFiltered<Texture2D>(SelectionMode.Unfiltered);
+        int numResized = 0;
 
         if (textures.Length <= 0)
         {
-            Debug.LogWarning("No textures selected. Please select all the textures you want to modify");
+            Debug.LogWarning("No textures selected. Please select all the textures you want to resize.");
             return;
         }
 
         foreach (var texture in textures)
         {
-            if (texture.maxTextureSize > ignoreBelowSize)
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+            var textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+
+            if (textureImporter.maxTextureSize != maxSize && textureImporter.maxTextureSize > ignoreBelowSize)
             {
-                texture.maxTextureSize = maxSize;
-                AssetDatabase.ImportAsset(texture.assetPath);
-                numConverted++;
+                textureImporter.maxTextureSize = maxSize;
+                AssetDatabase.ImportAsset(textureImporter.assetPath);
+                numResized++;
             }
         }
-        Debug.Log(numConverted == 1 ? $"{numConverted} texture converted." : $"{numConverted} textures converted.");
+
+        Debug.Log(numResized == 1 ? $"{numResized} texture resized." : $"{numResized} textures resized.");
     }
 }
